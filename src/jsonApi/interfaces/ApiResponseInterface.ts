@@ -12,5 +12,5 @@ export interface ApiResponseInterface {
 
 	data: ApiDataInterface | ApiDataInterface[];
 
-	error?: string;
+	error: string;
 }

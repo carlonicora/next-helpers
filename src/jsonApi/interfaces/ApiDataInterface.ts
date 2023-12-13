@@ -7,4 +7,5 @@ export interface ApiDataInterface {
 	generateApiUrl(params?: any): string;
 	dehydrate(): JsonApiHydratedDataInterface;
 	rehydrate(data: JsonApiHydratedDataInterface): this;
+	createJsonApi(data: any): any;
 }

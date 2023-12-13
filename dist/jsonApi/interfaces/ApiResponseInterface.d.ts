@@ -8,5 +8,5 @@ export interface ApiResponseInterface {
     nextPage?: () => Promise<ApiResponseInterface>;
     prevPage?: () => Promise<ApiResponseInterface>;
     data: ApiDataInterface | ApiDataInterface[];
-    error?: string;
+    error: string;
 }

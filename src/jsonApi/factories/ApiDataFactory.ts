@@ -2,20 +2,33 @@ import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 
 export class ApiDataFactory {
+	public static classMap = new Map<string, { new (): ApiDataInterface }>();
+
+	public static registerObjectClass(key: string, classConstructor: { new (): ApiDataInterface }) {
+		this.classMap.set(key, classConstructor);
+	}
+
 	private static async _request<T extends ApiDataInterface>(
 		method: string,
-		factory: () => T,
+		classKey: string,
 		params?: any,
 		body?: any
 	): Promise<ApiResponseInterface> {
+		const factoryClass = this.classMap.get(classKey);
+
+		if (!factoryClass) {
+			throw new Error(`Class not registered for key: ${classKey}`);
+		}
+
 		const response: ApiResponseInterface = {
 			ok: true,
 			response: 0,
 			data: [],
+			error: "",
 		};
 
 		let link = params?.link;
-		if (!link) link = factory().generateApiUrl(params);
+		if (!link) link = new factoryClass().generateApiUrl(params);
 
 		let token: string | undefined = undefined;
 		if (typeof window === "undefined") {
@@ -72,12 +85,12 @@ export class ApiDataFactory {
 
 				if (jsonApi.links.next) {
 					response.next = jsonApi.links.next;
-					response.nextPage = async () => ApiDataFactory.get(factory, { link: jsonApi.links.next });
+					response.nextPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.next });
 				}
 
 				if (jsonApi.links.prev) {
 					response.prev = jsonApi.links.prev;
-					response.prevPage = async () => ApiDataFactory.get(factory, { link: jsonApi.links.prev });
+					response.prevPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
 				}
 			}
 
@@ -85,14 +98,14 @@ export class ApiDataFactory {
 				const responseData: T[] = [];
 
 				for (const data of jsonApi.data) {
-					const object = factory();
+					const object = new factoryClass();
 					object.rehydrate({ jsonApi: data, included: included });
-					responseData.push(object);
+					responseData.push(object as T);
 				}
 
 				response.data = responseData;
 			} else {
-				const responseData = factory();
+				const responseData = new factoryClass();
 				responseData.rehydrate({ jsonApi: jsonApi.data, included: included });
 
 				response.data = responseData;
@@ -104,39 +117,39 @@ export class ApiDataFactory {
 		return response;
 	}
 
-	public static async get<T extends ApiDataInterface>(factory: () => T, params?: any): Promise<ApiResponseInterface> {
-		return this._request("GET", factory, params);
+	public static async get<T extends ApiDataInterface>(classKey: string, params?: any): Promise<ApiResponseInterface> {
+		return this._request<T>("GET", classKey, params);
 	}
 
 	public static async post<T extends ApiDataInterface>(
-		factory: () => T,
+		classKey: string,
 		params?: any,
 		body?: any
 	): Promise<ApiResponseInterface> {
 		if (!body) body = {};
-		return this._request("POST", factory, params, body);
+		return this._request<T>("POST", classKey, params, body);
 	}
 
 	public static async put<T extends ApiDataInterface>(
-		factory: () => T,
+		classKey: string,
 		params?: any,
 		body?: any
 	): Promise<ApiResponseInterface> {
-		return this._request("PUT", factory, params, body);
+		return this._request<T>("PUT", classKey, params, body);
 	}
 
 	public static async patch<T extends ApiDataInterface>(
-		factory: () => T,
+		classKey: string,
 		params?: any,
 		body?: any
 	): Promise<ApiResponseInterface> {
-		return this._request("PATCH", factory, params, body);
+		return this._request<T>("PATCH", classKey, params, body);
 	}
 
 	public static async delete<T extends ApiDataInterface>(
-		factory: () => T,
+		classKey: string,
 		params?: any
 	): Promise<ApiResponseInterface> {
-		return this._request("DELETE", factory, params);
+		return this._request<T>("DELETE", classKey, params);
 	}
 }

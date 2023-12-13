@@ -25,15 +25,23 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
 class ApiDataFactory {
-    static async _request(method, factory, params, body) {
+    static registerObjectClass(key, classConstructor) {
+        this.classMap.set(key, classConstructor);
+    }
+    static async _request(method, classKey, params, body) {
+        const factoryClass = this.classMap.get(classKey);
+        if (!factoryClass) {
+            throw new Error(`Class not registered for key: ${classKey}`);
+        }
         const response = {
             ok: true,
             response: 0,
             data: [],
+            error: "",
         };
         let link = params?.link;
         if (!link)
-            link = factory().generateApiUrl(params);
+            link = new factoryClass().generateApiUrl(params);
         let token = undefined;
         if (typeof window === "undefined") {
             const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
@@ -82,24 +90,24 @@ class ApiDataFactory {
                 response.self = jsonApi.links.self;
                 if (jsonApi.links.next) {
                     response.next = jsonApi.links.next;
-                    response.nextPage = async () => ApiDataFactory.get(factory, { link: jsonApi.links.next });
+                    response.nextPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.next });
                 }
                 if (jsonApi.links.prev) {
                     response.prev = jsonApi.links.prev;
-                    response.prevPage = async () => ApiDataFactory.get(factory, { link: jsonApi.links.prev });
+                    response.prevPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
                 }
             }
             if (Array.isArray(jsonApi.data)) {
                 const responseData = [];
                 for (const data of jsonApi.data) {
-                    const object = factory();
+                    const object = new factoryClass();
                     object.rehydrate({ jsonApi: data, included: included });
                     responseData.push(object);
                 }
                 response.data = responseData;
             }
             else {
-                const responseData = factory();
+                const responseData = new factoryClass();
                 responseData.rehydrate({ jsonApi: jsonApi.data, included: included });
                 response.data = responseData;
             }
@@ -109,23 +117,24 @@ class ApiDataFactory {
         }
         return response;
     }
-    static async get(factory, params) {
-        return this._request("GET", factory, params);
+    static async get(classKey, params) {
+        return this._request("GET", classKey, params);
     }
-    static async post(factory, params, body) {
+    static async post(classKey, params, body) {
         if (!body)
             body = {};
-        return this._request("POST", factory, params, body);
+        return this._request("POST", classKey, params, body);
     }
-    static async put(factory, params, body) {
-        return this._request("PUT", factory, params, body);
+    static async put(classKey, params, body) {
+        return this._request("PUT", classKey, params, body);
     }
-    static async patch(factory, params, body) {
-        return this._request("PATCH", factory, params, body);
+    static async patch(classKey, params, body) {
+        return this._request("PATCH", classKey, params, body);
     }
-    static async delete(factory, params) {
-        return this._request("DELETE", factory, params);
+    static async delete(classKey, params) {
+        return this._request("DELETE", classKey, params);
     }
 }
 exports.ApiDataFactory = ApiDataFactory;
+ApiDataFactory.classMap = new Map();
 //# sourceMappingURL=ApiDataFactory.js.map
