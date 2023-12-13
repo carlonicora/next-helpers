@@ -5,7 +5,7 @@ export class ApiDataFactory {
 	public static classMap = new Map<string, { new (): ApiDataInterface }>();
 
 	public static registerObjectClass(key: string, classConstructor: { new (): ApiDataInterface }) {
-		this.classMap.set(key, classConstructor);
+		if (!this.classMap.has(key)) this.classMap.set(key, classConstructor);
 	}
 
 	private static async _request<T extends ApiDataInterface>(

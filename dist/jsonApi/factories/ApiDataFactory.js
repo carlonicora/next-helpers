@@ -26,7 +26,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
 class ApiDataFactory {
     static registerObjectClass(key, classConstructor) {
-        this.classMap.set(key, classConstructor);
+        if (!this.classMap.has(key))
+            this.classMap.set(key, classConstructor);
     }
     static async _request(method, classKey, params, body) {
         const factoryClass = this.classMap.get(classKey);
