@@ -1,3 +1,4 @@
+import { RehydrationFactory } from "../factories/RehydrationFactory";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { JsonApiHydratedDataInterface } from "../interfaces/JsonApiHydratedDataInterface";
 
@@ -27,7 +28,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
 	protected _readIncluded<T extends ApiDataInterface>(
 		data: JsonApiHydratedDataInterface,
 		type: string,
-		factory: () => T
+		classKey: string
 	): T | T[] {
 		if (
 			data.included === undefined ||
@@ -46,9 +47,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
 
 				if (includedData === undefined) return undefined;
 
-				const object = factory();
-				object.rehydrate({ jsonApi: includedData, included: data.included });
-				return object;
+				return RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included });
 			});
 
 			return response.filter((item: T | undefined) => item !== undefined) as T[];
@@ -60,9 +59,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
 				includedData.type === data.jsonApi.relationships[type].data.type
 		);
 
-		const object = factory();
-		object.rehydrate({ jsonApi: includedData, included: data.included });
-		return object;
+		return RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included }) as T;
 	}
 
 	dehydrate(): JsonApiHydratedDataInterface {

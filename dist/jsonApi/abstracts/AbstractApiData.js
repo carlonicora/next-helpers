@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractApiData = void 0;
+const RehydrationFactory_1 = require("../factories/RehydrationFactory");
 class AbstractApiData {
     get included() {
         throw new Error("Method not implemented.");
@@ -14,7 +15,7 @@ class AbstractApiData {
         return this._self;
     }
     ingestJsonApi(data) { }
-    _readIncluded(data, type, factory) {
+    _readIncluded(data, type, classKey) {
         if (data.included === undefined ||
             data.included.length === 0 ||
             data.jsonApi.relationships === undefined ||
@@ -26,17 +27,13 @@ class AbstractApiData {
                 const includedData = data.included.find((includedData) => includedData.id === jsonApiData.id && includedData.type === jsonApiData.type);
                 if (includedData === undefined)
                     return undefined;
-                const object = factory();
-                object.rehydrate({ jsonApi: includedData, included: data.included });
-                return object;
+                return RehydrationFactory_1.RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included });
             });
             return response.filter((item) => item !== undefined);
         }
         const includedData = data.included.find((includedData) => includedData.id === data.jsonApi.relationships[type].data.id &&
             includedData.type === data.jsonApi.relationships[type].data.type);
-        const object = factory();
-        object.rehydrate({ jsonApi: includedData, included: data.included });
-        return object;
+        return RehydrationFactory_1.RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included });
     }
     dehydrate() {
         return {
