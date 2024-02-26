@@ -61,7 +61,7 @@ export class ApiDataFactory {
 			};
 		}
 
-		if (params?.revalidate) options.cache = "reload";
+		//if (params?.revalidate) options.cache = "reload";
 
 		const apiResponse = await fetch(link, options);
 
