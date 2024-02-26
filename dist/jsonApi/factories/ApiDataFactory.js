@@ -73,6 +73,7 @@ class ApiDataFactory {
                 Authorization: `Bearer ${token}`,
             };
         }
+        options.cache = "force-cache";
         const apiResponse = await fetch(link, options);
         response.ok = apiResponse.ok;
         response.response = apiResponse.status;
