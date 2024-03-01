@@ -61,8 +61,12 @@ export class ApiDataFactory {
 			};
 		}
 
-		//if (params?.revalidate) options.cache = "reload";
-		options.cache = "force-cache";
+		// if (typeof window !== "undefined") {
+		// 	//@ts-ignore
+		// 	options.next = {
+		// 		revalidate: 3600,
+		// 	};
+		// }
 
 		const apiResponse = await fetch(link, options);
 
