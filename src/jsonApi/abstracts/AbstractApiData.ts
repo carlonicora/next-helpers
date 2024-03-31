@@ -21,12 +21,12 @@ export abstract class AbstractApiData implements ApiDataInterface {
 		return this._self;
 	}
 
-	get createdAt(): Date {
-		throw new Error("Method not implemented.");
+	get createdAt(): Date | undefined {
+		return this._createdAt;
 	}
 
-	get updatedAt(): Date {
-		throw new Error("Method not implemented.");
+	get updatedAt(): Date | undefined {
+		return this._createdAt;
 	}
 
 	get included(): any[] {
