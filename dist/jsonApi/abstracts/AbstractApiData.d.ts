@@ -9,8 +9,8 @@ export declare abstract class AbstractApiData implements ApiDataInterface {
     protected _self?: string;
     get id(): string;
     get self(): string | undefined;
-    get createdAt(): Date;
-    get updatedAt(): Date;
+    get createdAt(): Date | undefined;
+    get updatedAt(): Date | undefined;
     get included(): any[];
     ingestJsonApi(data: JsonApiHydratedDataInterface): void;
     abstract generateApiUrl(params?: any): string;

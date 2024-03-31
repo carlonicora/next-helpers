@@ -12,10 +12,10 @@ class AbstractApiData {
         return this._self;
     }
     get createdAt() {
-        throw new Error("Method not implemented.");
+        return this._createdAt;
     }
     get updatedAt() {
-        throw new Error("Method not implemented.");
+        return this._updatedAt;
     }
     get included() {
         return this._included ?? [];

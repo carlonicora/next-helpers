@@ -26,7 +26,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
 	}
 
 	get updatedAt(): Date | undefined {
-		return this._createdAt;
+		return this._updatedAt;
 	}
 
 	get included(): any[] {
