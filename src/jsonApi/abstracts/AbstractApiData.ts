@@ -3,12 +3,13 @@ import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { JsonApiHydratedDataInterface } from "../interfaces/JsonApiHydratedDataInterface";
 
 export abstract class AbstractApiData implements ApiDataInterface {
-	get included(): any[] {
-		throw new Error("Method not implemented.");
-	}
 	protected _jsonApi?: any;
 	protected _included?: any[];
+
 	protected _id?: string;
+	protected _createdAt?: Date;
+	protected _updatedAt?: Date;
+
 	protected _self?: string;
 
 	get id(): string {
@@ -18,6 +19,18 @@ export abstract class AbstractApiData implements ApiDataInterface {
 
 	get self(): string | undefined {
 		return this._self;
+	}
+
+	get createdAt(): Date {
+		throw new Error("Method not implemented.");
+	}
+
+	get updatedAt(): Date {
+		throw new Error("Method not implemented.");
+	}
+
+	get included(): any[] {
+		return this._included ?? [];
 	}
 
 	ingestJsonApi(data: JsonApiHydratedDataInterface): void {}
@@ -74,6 +87,9 @@ export abstract class AbstractApiData implements ApiDataInterface {
 		this._included = data.included;
 
 		this._id = this._jsonApi.id;
+		this._createdAt = this._jsonApi.meta.createdAt !== undefined ? new Date(this._jsonApi.meta.createdAt) : undefined;
+		this._updatedAt = this._jsonApi.meta.updatedAt !== undefined ? new Date(this._jsonApi.meta.updatedAt) : undefined;
+
 		this._self = this._jsonApi.links?.self ?? undefined;
 
 		return this;

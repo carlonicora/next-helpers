@@ -3,9 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractApiData = void 0;
 const RehydrationFactory_1 = require("../factories/RehydrationFactory");
 class AbstractApiData {
-    get included() {
-        throw new Error("Method not implemented.");
-    }
     get id() {
         if (!this._id)
             throw new Error("Grocery ID is not set.");
@@ -13,6 +10,15 @@ class AbstractApiData {
     }
     get self() {
         return this._self;
+    }
+    get createdAt() {
+        throw new Error("Method not implemented.");
+    }
+    get updatedAt() {
+        throw new Error("Method not implemented.");
+    }
+    get included() {
+        return this._included ?? [];
     }
     ingestJsonApi(data) { }
     _readIncluded(data, type, dataType) {
@@ -45,6 +51,8 @@ class AbstractApiData {
         this._jsonApi = data.jsonApi;
         this._included = data.included;
         this._id = this._jsonApi.id;
+        this._createdAt = this._jsonApi.meta.createdAt !== undefined ? new Date(this._jsonApi.meta.createdAt) : undefined;
+        this._updatedAt = this._jsonApi.meta.updatedAt !== undefined ? new Date(this._jsonApi.meta.updatedAt) : undefined;
         this._self = this._jsonApi.links?.self ?? undefined;
         return this;
     }

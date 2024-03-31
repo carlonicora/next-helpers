@@ -1,13 +1,17 @@
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { JsonApiHydratedDataInterface } from "../interfaces/JsonApiHydratedDataInterface";
 export declare abstract class AbstractApiData implements ApiDataInterface {
-    get included(): any[];
     protected _jsonApi?: any;
     protected _included?: any[];
     protected _id?: string;
+    protected _createdAt?: Date;
+    protected _updatedAt?: Date;
     protected _self?: string;
     get id(): string;
     get self(): string | undefined;
+    get createdAt(): Date;
+    get updatedAt(): Date;
+    get included(): any[];
     ingestJsonApi(data: JsonApiHydratedDataInterface): void;
     abstract generateApiUrl(params?: any): string;
     abstract createJsonApi(data: any): any;
