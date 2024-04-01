@@ -7,6 +7,7 @@ export declare class ApiDataFactory {
     }): void;
     private static _request;
     static get<T extends ApiDataInterface>(classKey: string, params?: any): Promise<ApiResponseInterface>;
+    static getData<T extends ApiDataInterface>(classKey: string, params?: any): Promise<T | T[]>;
     static post<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;
     static put<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;
     static patch<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;

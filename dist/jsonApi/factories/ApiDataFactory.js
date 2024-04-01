@@ -119,6 +119,12 @@ class ApiDataFactory {
     static async get(classKey, params) {
         return this._request("GET", classKey, params);
     }
+    static async getData(classKey, params) {
+        const data = await this.get(classKey, params);
+        if (!data.ok)
+            throw new Error(data.error);
+        return data.data;
+    }
     static async post(classKey, params, body) {
         if (!body)
             body = {};

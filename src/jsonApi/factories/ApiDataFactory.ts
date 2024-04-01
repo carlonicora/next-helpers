@@ -126,6 +126,14 @@ export class ApiDataFactory {
 		return this._request<T>("GET", classKey, params);
 	}
 
+	public static async getData<T extends ApiDataInterface>(classKey: string, params?: any): Promise<T | T[]> {
+		const data = await this.get<T>(classKey, params);
+
+		if (!data.ok) throw new Error(data.error);
+
+		return data.data as T | T[];
+	}
+
 	public static async post<T extends ApiDataInterface>(
 		classKey: string,
 		params?: any,
