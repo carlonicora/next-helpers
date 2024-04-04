@@ -98,6 +98,42 @@ export class ApiDataFactory {
     if (apiResponse.status === 204) return response;
 
     try {
+      const jsonApi: any = await apiResponse.json();
+
+      const included: any = jsonApi.included ?? [];
+
+      if (jsonApi.links) {
+        response.self = jsonApi.links.self;
+
+        if (jsonApi.links.next) {
+          response.next = jsonApi.links.next;
+          response.nextPage = async () =>
+            ApiDataFactory.get(classKey, { link: jsonApi.links.next });
+        }
+
+        if (jsonApi.links.prev) {
+          response.prev = jsonApi.links.prev;
+          response.prevPage = async () =>
+            ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
+        }
+      }
+
+      if (Array.isArray(jsonApi.data)) {
+        const responseData: T[] = [];
+
+        for (const data of jsonApi.data) {
+          const object = new factoryClass();
+          object.rehydrate({ jsonApi: data, included: included });
+          responseData.push(object as T);
+        }
+
+        response.data = responseData;
+      } else {
+        const responseData = new factoryClass();
+        responseData.rehydrate({ jsonApi: jsonApi.data, included: included });
+
+        response.data = responseData;
+      }
     } catch (e) {
       console.error(e);
     }
