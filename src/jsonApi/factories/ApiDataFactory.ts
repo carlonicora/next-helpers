@@ -2,167 +2,185 @@ import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 
 export class ApiDataFactory {
-	public static classMap = new Map<string, { new (): ApiDataInterface }>();
+  public static classMap = new Map<string, { new (): ApiDataInterface }>();
 
-	public static registerObjectClass(key: string, classConstructor: { new (): ApiDataInterface }) {
-		if (!this.classMap.has(key)) this.classMap.set(key, classConstructor);
-	}
+  public static registerObjectClass(
+    key: string,
+    classConstructor: { new (): ApiDataInterface },
+  ) {
+    if (!this.classMap.has(key)) this.classMap.set(key, classConstructor);
+  }
 
-	private static async _request<T extends ApiDataInterface>(
-		method: string,
-		classKey: string,
-		params?: any,
-		body?: any
-	): Promise<ApiResponseInterface> {
-		const factoryClass = this.classMap.get(classKey);
+  private static async _request<T extends ApiDataInterface>(
+    method: string,
+    classKey: string,
+    params?: any,
+    body?: any,
+  ): Promise<ApiResponseInterface> {
+    const factoryClass = this.classMap.get(classKey);
 
-		if (!factoryClass) {
-			throw new Error(`Class not registered for key: ${classKey}`);
-		}
+    if (!factoryClass) {
+      throw new Error(`Class not registered for key: ${classKey}`);
+    }
 
-		const response: ApiResponseInterface = {
-			ok: true,
-			response: 0,
-			data: [],
-			error: "",
-		};
+    const response: ApiResponseInterface = {
+      ok: true,
+      response: 0,
+      data: [],
+      error: "",
+    };
 
-		let link = params?.link;
-		if (!link) link = new factoryClass().generateApiUrl(params);
+    let link = params?.link;
+    if (!link) link = new factoryClass().generateApiUrl(params);
 
-		let token: string | undefined = undefined;
-		if (typeof window === "undefined") {
-			const serverCookies = await import("next/headers");
-			const cookieStore = serverCookies.cookies();
+    let token: string | undefined = undefined;
+    if (typeof window === "undefined") {
+      const serverCookies = await import("next/headers");
+      const cookieStore = serverCookies.cookies();
 
-			token =
-				cookieStore.get("next-auth.session-token")?.value ??
-				cookieStore.get("__Secure-next-auth.session-token")?.value ??
-				undefined;
-			if (!link.startsWith("http")) link = process.env.NEXT_PUBLIC_API_URL + link;
-		} else {
-			if (link.startsWith("http")) link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
-			link = process.env.NEXT_PUBLIC_INTERNAL_API_URL + "?uri=" + encodeURIComponent(link);
-		}
+      token =
+        cookieStore.get("next-auth.session-token")?.value ??
+        cookieStore.get("__Secure-next-auth.session-token")?.value ??
+        undefined;
+      if (!link.startsWith("http"))
+        link = process.env.NEXT_PUBLIC_API_URL + link;
+    } else {
+      if (link.startsWith("http"))
+        link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
+      link =
+        process.env.NEXT_PUBLIC_INTERNAL_API_URL +
+        "?uri=" +
+        encodeURIComponent(link);
+    }
 
-		const options: RequestInit = {
-			method: method,
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: body ? JSON.stringify(body) : undefined,
-		};
+    const options: RequestInit = {
+      method: method,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    };
 
-		if (token) {
-			options.headers = {
-				...options.headers,
-				Authorization: `Bearer ${token}`,
-			};
-		}
+    if (params?.headers) Object.assign(options.headers, params.headers);
 
-		// if (typeof window !== "undefined") {
-		// 	//@ts-ignore
-		// 	options.next = {
-		// 		revalidate: 3600,
-		// 	};
-		// }
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      };
+    }
 
-		const apiResponse = await fetch(link, options);
+    // if (typeof window !== "undefined") {
+    // 	//@ts-ignore
+    // 	options.next = {
+    // 		revalidate: 3600,
+    // 	};
+    // }
 
-		response.ok = apiResponse.ok;
-		response.response = apiResponse.status;
+    const apiResponse = await fetch(link, options);
 
-		if (!apiResponse.ok) {
-			response.error = apiResponse.statusText;
-			return response;
-		}
+    response.ok = apiResponse.ok;
+    response.response = apiResponse.status;
 
-		if (apiResponse.status === 204) return response;
+    if (!apiResponse.ok) {
+      response.error = apiResponse.statusText;
+      return response;
+    }
 
-		try {
-			const jsonApi: any = await apiResponse.json();
+    if (apiResponse.status === 204) return response;
 
-			const included: any = jsonApi.included ?? [];
+    try {
+      const jsonApi: any = await apiResponse.json();
 
-			if (jsonApi.links) {
-				response.self = jsonApi.links.self;
+      const included: any = jsonApi.included ?? [];
 
-				if (jsonApi.links.next) {
-					response.next = jsonApi.links.next;
-					response.nextPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.next });
-				}
+      if (jsonApi.links) {
+        response.self = jsonApi.links.self;
 
-				if (jsonApi.links.prev) {
-					response.prev = jsonApi.links.prev;
-					response.prevPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
-				}
-			}
+        if (jsonApi.links.next) {
+          response.next = jsonApi.links.next;
+          response.nextPage = async () =>
+            ApiDataFactory.get(classKey, { link: jsonApi.links.next });
+        }
 
-			if (Array.isArray(jsonApi.data)) {
-				const responseData: T[] = [];
+        if (jsonApi.links.prev) {
+          response.prev = jsonApi.links.prev;
+          response.prevPage = async () =>
+            ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
+        }
+      }
 
-				for (const data of jsonApi.data) {
-					const object = new factoryClass();
-					object.rehydrate({ jsonApi: data, included: included });
-					responseData.push(object as T);
-				}
+      if (Array.isArray(jsonApi.data)) {
+        const responseData: T[] = [];
 
-				response.data = responseData;
-			} else {
-				const responseData = new factoryClass();
-				responseData.rehydrate({ jsonApi: jsonApi.data, included: included });
+        for (const data of jsonApi.data) {
+          const object = new factoryClass();
+          object.rehydrate({ jsonApi: data, included: included });
+          responseData.push(object as T);
+        }
 
-				response.data = responseData;
-			}
-		} catch (e) {
-			console.error(e);
-		}
+        response.data = responseData;
+      } else {
+        const responseData = new factoryClass();
+        responseData.rehydrate({ jsonApi: jsonApi.data, included: included });
 
-		return response;
-	}
+        response.data = responseData;
+      }
+    } catch (e) {
+      console.error(e);
+    }
 
-	public static async get<T extends ApiDataInterface>(classKey: string, params?: any): Promise<ApiResponseInterface> {
-		return this._request<T>("GET", classKey, params);
-	}
+    return response;
+  }
 
-	public static async getData<T extends ApiDataInterface>(classKey: string, params?: any): Promise<T | T[]> {
-		const data = await this.get<T>(classKey, params);
+  public static async get<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+  ): Promise<ApiResponseInterface> {
+    return this._request<T>("GET", classKey, params);
+  }
 
-		if (!data.ok) throw new Error(data.error);
+  public static async getData<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+  ): Promise<T | T[]> {
+    const data = await this.get<T>(classKey, params);
 
-		return data.data as T | T[];
-	}
+    if (!data.ok) throw new Error(data.error);
 
-	public static async post<T extends ApiDataInterface>(
-		classKey: string,
-		params?: any,
-		body?: any
-	): Promise<ApiResponseInterface> {
-		if (!body) body = {};
-		return this._request<T>("POST", classKey, params, body);
-	}
+    return data.data as T | T[];
+  }
 
-	public static async put<T extends ApiDataInterface>(
-		classKey: string,
-		params?: any,
-		body?: any
-	): Promise<ApiResponseInterface> {
-		return this._request<T>("PUT", classKey, params, body);
-	}
+  public static async post<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+    body?: any,
+  ): Promise<ApiResponseInterface> {
+    if (!body) body = {};
+    return this._request<T>("POST", classKey, params, body);
+  }
 
-	public static async patch<T extends ApiDataInterface>(
-		classKey: string,
-		params?: any,
-		body?: any
-	): Promise<ApiResponseInterface> {
-		return this._request<T>("PATCH", classKey, params, body);
-	}
+  public static async put<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+    body?: any,
+  ): Promise<ApiResponseInterface> {
+    return this._request<T>("PUT", classKey, params, body);
+  }
 
-	public static async delete<T extends ApiDataInterface>(
-		classKey: string,
-		params?: any
-	): Promise<ApiResponseInterface> {
-		return this._request<T>("DELETE", classKey, params);
-	}
+  public static async patch<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+    body?: any,
+  ): Promise<ApiResponseInterface> {
+    return this._request<T>("PATCH", classKey, params, body);
+  }
+
+  public static async delete<T extends ApiDataInterface>(
+    classKey: string,
+    params?: any,
+  ): Promise<ApiResponseInterface> {
+    return this._request<T>("DELETE", classKey, params);
+  }
 }

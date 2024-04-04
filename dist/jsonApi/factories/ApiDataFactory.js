@@ -57,7 +57,10 @@ class ApiDataFactory {
         else {
             if (link.startsWith("http"))
                 link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
-            link = process.env.NEXT_PUBLIC_INTERNAL_API_URL + "?uri=" + encodeURIComponent(link);
+            link =
+                process.env.NEXT_PUBLIC_INTERNAL_API_URL +
+                    "?uri=" +
+                    encodeURIComponent(link);
         }
         const options = {
             method: method,
@@ -67,6 +70,8 @@ class ApiDataFactory {
             },
             body: body ? JSON.stringify(body) : undefined,
         };
+        if (params?.headers)
+            Object.assign(options.headers, params.headers);
         if (token) {
             options.headers = {
                 ...options.headers,
