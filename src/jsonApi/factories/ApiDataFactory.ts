@@ -53,23 +53,22 @@ export class ApiDataFactory {
         encodeURIComponent(link);
     }
 
+    const additionalHeaders: any = {};
+    if (params?.headers) {
+      params.headers.forEach((value: any, key: any) => {
+        if (key.startsWith("next-helper")) additionalHeaders[key] = value;
+      });
+    }
+
     const options: RequestInit = {
       method: method,
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        ...additionalHeaders,
       },
       body: body ? JSON.stringify(body) : undefined,
     };
-
-    if (params?.headers) {
-      const additionalHeaders: any = {};
-      params.headers.forEach((value: any, key: any) => {
-        if (key.startsWith("next-helper")) additionalHeaders[key] = value;
-      });
-
-      options.headers = { ...options.headers, ...additionalHeaders };
-    }
 
     if (token) {
       options.headers = {
