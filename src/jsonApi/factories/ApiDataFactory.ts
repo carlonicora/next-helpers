@@ -62,7 +62,14 @@ export class ApiDataFactory {
       body: body ? JSON.stringify(body) : undefined,
     };
 
-    if (params?.headers) Object.assign(options.headers, params.headers);
+    if (params?.headers) {
+      const additionalHeaders: any = {};
+      params.headers.forEach((value: any, key: any) => {
+        if (key.startsWith("next-helper")) additionalHeaders[key] = value;
+      });
+
+      options.headers = { ...options.headers, ...additionalHeaders };
+    }
 
     if (token) {
       options.headers = {
