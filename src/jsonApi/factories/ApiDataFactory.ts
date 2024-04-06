@@ -47,10 +47,7 @@ export class ApiDataFactory {
     } else {
       if (link.startsWith("http"))
         link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
-      link =
-        process.env.NEXT_PUBLIC_INTERNAL_API_URL +
-        "?uri=" +
-        encodeURIComponent(link);
+      link = "/api/nexthelper?uri=" + encodeURIComponent(link);
     }
 
     const additionalHeaders: any = {};
