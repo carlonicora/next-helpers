@@ -65,6 +65,7 @@ export class ApiDataFactory {
         "Content-Type": "application/json",
         ...additionalHeaders,
       },
+      cache: "no-store",
       body: body ? JSON.stringify(body) : undefined,
     };
 
@@ -88,8 +89,12 @@ export class ApiDataFactory {
     response.response = apiResponse.status;
 
     if (!apiResponse.ok) {
-      const json = await apiResponse.json();
-      response.error = json?.message ?? apiResponse.statusText;
+      try {
+        const json = await apiResponse.json();
+        response.error = json?.message ?? apiResponse.statusText;
+      } catch (e) {
+        response.error = apiResponse.statusText;
+      }
       return response;
     }
 
