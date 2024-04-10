@@ -24,10 +24,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
+const cookies_next_1 = require("cookies-next");
 class ApiDataFactory {
-    static registerApiUrl(url) {
-        this._apiUrl = url;
-    }
     static registerObjectClass(key, classConstructor) {
         if (!this.classMap.has(key))
             this.classMap.set(key, classConstructor);
@@ -46,22 +44,28 @@ class ApiDataFactory {
         let link = params?.link;
         if (!link)
             link = new factoryClass().generateApiUrl(params);
+        let apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+        let siteId = "";
         let token = undefined;
         if (typeof window === "undefined") {
             const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
             const cookieStore = serverCookies.cookies();
+            siteId = cookieStore.get("siteId")?.value ?? "";
             token =
                 cookieStore.get("next-auth.session-token")?.value ??
                     cookieStore.get("__Secure-next-auth.session-token")?.value ??
                     undefined;
             if (!link.startsWith("http"))
-                link = this._apiUrl + link;
+                link = apiUrl + link;
         }
         else {
+            siteId = (0, cookies_next_1.getCookie)("siteId") ?? "";
             if (link.startsWith("http"))
-                link = link.substring(this._apiUrl?.length ?? 0);
+                link = link.substring(apiUrl?.length ?? 0);
             link = "/api/nexthelper?uri=" + encodeURIComponent(link);
         }
+        if (siteId !== "")
+            link = link.replace("*", siteId);
         const additionalHeaders = {};
         if (params?.headers) {
             Object.keys(params.headers).forEach((key) => {
@@ -160,5 +164,4 @@ class ApiDataFactory {
 }
 exports.ApiDataFactory = ApiDataFactory;
 ApiDataFactory.classMap = new Map();
-ApiDataFactory._apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
 //# sourceMappingURL=ApiDataFactory.js.map

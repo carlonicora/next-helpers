@@ -11,6 +11,7 @@
 	"author": "Carlo Nicora",
 	"license": "ISC",
 	"dependencies": {
+		"cookies-next": "^4.1.1"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.2",

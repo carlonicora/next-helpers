@@ -1,13 +1,9 @@
+import { getCookie } from "cookies-next";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 
 export class ApiDataFactory {
   public static classMap = new Map<string, { new (): ApiDataInterface }>();
-  private static _apiUrl: string = process.env.NEXT_PUBLIC_API_URL ?? "";
-
-  public static registerApiUrl(url: string): void {
-    this._apiUrl = url;
-  }
 
   public static registerObjectClass(
     key: string,
@@ -38,21 +34,28 @@ export class ApiDataFactory {
     let link = params?.link;
     if (!link) link = new factoryClass().generateApiUrl(params);
 
+    let apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+    let siteId = "";
+
     let token: string | undefined = undefined;
     if (typeof window === "undefined") {
       const serverCookies = await import("next/headers");
       const cookieStore = serverCookies.cookies();
 
+      siteId = cookieStore.get("siteId")?.value ?? "";
+
       token =
         cookieStore.get("next-auth.session-token")?.value ??
         cookieStore.get("__Secure-next-auth.session-token")?.value ??
         undefined;
-      if (!link.startsWith("http")) link = this._apiUrl + link;
+      if (!link.startsWith("http")) link = apiUrl + link;
     } else {
-      if (link.startsWith("http"))
-        link = link.substring(this._apiUrl?.length ?? 0);
+      siteId = getCookie("siteId") ?? "";
+      if (link.startsWith("http")) link = link.substring(apiUrl?.length ?? 0);
       link = "/api/nexthelper?uri=" + encodeURIComponent(link);
     }
+
+    if (siteId !== "") link = link.replace("*", siteId);
 
     const additionalHeaders: any = {};
     if (params?.headers) {
