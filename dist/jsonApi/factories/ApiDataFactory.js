@@ -25,6 +25,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
 class ApiDataFactory {
+    static registerApiUrl(url) {
+        this._apiUrl = url;
+    }
     static registerObjectClass(key, classConstructor) {
         if (!this.classMap.has(key))
             this.classMap.set(key, classConstructor);
@@ -52,11 +55,11 @@ class ApiDataFactory {
                     cookieStore.get("__Secure-next-auth.session-token")?.value ??
                     undefined;
             if (!link.startsWith("http"))
-                link = process.env.NEXT_PUBLIC_API_URL + link;
+                link = this._apiUrl + link;
         }
         else {
             if (link.startsWith("http"))
-                link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
+                link = link.substring(this._apiUrl?.length ?? 0);
             link = "/api/nexthelper?uri=" + encodeURIComponent(link);
         }
         const additionalHeaders = {};
@@ -157,4 +160,5 @@ class ApiDataFactory {
 }
 exports.ApiDataFactory = ApiDataFactory;
 ApiDataFactory.classMap = new Map();
+ApiDataFactory._apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
 //# sourceMappingURL=ApiDataFactory.js.map

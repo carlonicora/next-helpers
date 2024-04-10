@@ -2,6 +2,8 @@ import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 export declare class ApiDataFactory {
     static classMap: Map<string, new () => ApiDataInterface>;
+    private static _apiUrl;
+    static registerApiUrl(url: string): void;
     static registerObjectClass(key: string, classConstructor: {
         new (): ApiDataInterface;
     }): void;

@@ -3,6 +3,11 @@ import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 
 export class ApiDataFactory {
   public static classMap = new Map<string, { new (): ApiDataInterface }>();
+  private static _apiUrl: string = process.env.NEXT_PUBLIC_API_URL ?? "";
+
+  public static registerApiUrl(url: string): void {
+    this._apiUrl = url;
+  }
 
   public static registerObjectClass(
     key: string,
@@ -42,11 +47,10 @@ export class ApiDataFactory {
         cookieStore.get("next-auth.session-token")?.value ??
         cookieStore.get("__Secure-next-auth.session-token")?.value ??
         undefined;
-      if (!link.startsWith("http"))
-        link = process.env.NEXT_PUBLIC_API_URL + link;
+      if (!link.startsWith("http")) link = this._apiUrl + link;
     } else {
       if (link.startsWith("http"))
-        link = link.substring(process.env.NEXT_PUBLIC_API_URL?.length ?? 0);
+        link = link.substring(this._apiUrl?.length ?? 0);
       link = "/api/nexthelper?uri=" + encodeURIComponent(link);
     }
 
