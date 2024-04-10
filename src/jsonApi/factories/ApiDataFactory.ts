@@ -88,7 +88,8 @@ export class ApiDataFactory {
     response.response = apiResponse.status;
 
     if (!apiResponse.ok) {
-      response.error = apiResponse.statusText;
+      const json = await apiResponse.json();
+      response.error = json?.message ?? apiResponse.statusText;
       return response;
     }
 
