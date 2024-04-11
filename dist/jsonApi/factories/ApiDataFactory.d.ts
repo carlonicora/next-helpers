@@ -8,8 +8,14 @@ export declare class ApiDataFactory {
     private static _request;
     static get<T extends ApiDataInterface>(classKey: string, params?: any): Promise<ApiResponseInterface>;
     static getData<T extends ApiDataInterface>(classKey: string, params?: any): Promise<T | T[]>;
-    static post<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;
-    static put<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;
-    static patch<T extends ApiDataInterface>(classKey: string, params?: any, body?: any): Promise<ApiResponseInterface>;
+    static post<T extends ApiDataInterface>(classKey: string, params?: any, body?: any, files?: FileList | {
+        [key: string]: File;
+    }): Promise<ApiResponseInterface>;
+    static put<T extends ApiDataInterface>(classKey: string, params?: any, body?: any, files?: FileList | {
+        [key: string]: File;
+    }): Promise<ApiResponseInterface>;
+    static patch<T extends ApiDataInterface>(classKey: string, params?: any, body?: any, files?: FileList | {
+        [key: string]: File;
+    }): Promise<ApiResponseInterface>;
     static delete<T extends ApiDataInterface>(classKey: string, params?: any): Promise<ApiResponseInterface>;
 }

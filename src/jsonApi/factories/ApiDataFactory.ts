@@ -17,6 +17,7 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
+    files?: FileList | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     const factoryClass = this.classMap.get(classKey);
 
@@ -65,15 +66,34 @@ export class ApiDataFactory {
       });
     }
 
+    let requestBody: BodyInit | undefined = undefined;
+    if (files) {
+      const formData = new FormData();
+      if (typeof files === "object" && !(files instanceof FileList)) {
+        Object.keys(files).forEach((key) => formData.append(key, files[key]));
+      } else {
+        for (let i = 0; i < files.length; i++) {
+          formData.append(`file${i}`, files[i]);
+        }
+      }
+
+      if (body && Object.keys(body).length > 0) {
+        formData.append("json", JSON.stringify(body));
+      }
+      requestBody = formData;
+    } else {
+      requestBody = body ? JSON.stringify(body) : undefined;
+      additionalHeaders["Content-Type"] = "application/json";
+    }
+
     const options: RequestInit = {
       method: method,
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json",
         ...additionalHeaders,
       },
       cache: "no-store",
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     };
 
     if (token) {
@@ -82,13 +102,6 @@ export class ApiDataFactory {
         Authorization: `Bearer ${token}`,
       };
     }
-
-    // if (typeof window !== "undefined") {
-    // 	//@ts-ignore
-    // 	options.next = {
-    // 		revalidate: 3600,
-    // 	};
-    // }
 
     const apiResponse = await fetch(link, options);
 
@@ -173,25 +186,28 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
+    files?: FileList | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     if (!body) body = {};
-    return this._request<T>("POST", classKey, params, body);
+    return this._request<T>("POST", classKey, params, body, files);
   }
 
   public static async put<T extends ApiDataInterface>(
     classKey: string,
     params?: any,
     body?: any,
+    files?: FileList | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
-    return this._request<T>("PUT", classKey, params, body);
+    return this._request<T>("PUT", classKey, params, body, files);
   }
 
   public static async patch<T extends ApiDataInterface>(
     classKey: string,
     params?: any,
     body?: any,
+    files?: FileList | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
-    return this._request<T>("PATCH", classKey, params, body);
+    return this._request<T>("PATCH", classKey, params, body, files);
   }
 
   public static async delete<T extends ApiDataInterface>(

@@ -30,7 +30,7 @@ class ApiDataFactory {
         if (!this.classMap.has(key))
             this.classMap.set(key, classConstructor);
     }
-    static async _request(method, classKey, params, body) {
+    static async _request(method, classKey, params, body, files) {
         const factoryClass = this.classMap.get(classKey);
         if (!factoryClass) {
             throw new Error(`Class not registered for key: ${classKey}`);
@@ -73,15 +73,34 @@ class ApiDataFactory {
                     additionalHeaders[key] = params.headers[key];
             });
         }
+        let requestBody = undefined;
+        if (files) {
+            const formData = new FormData();
+            if (typeof files === "object" && !(files instanceof FileList)) {
+                Object.keys(files).forEach((key) => formData.append(key, files[key]));
+            }
+            else {
+                for (let i = 0; i < files.length; i++) {
+                    formData.append(`file${i}`, files[i]);
+                }
+            }
+            if (body && Object.keys(body).length > 0) {
+                formData.append("json", JSON.stringify(body));
+            }
+            requestBody = formData;
+        }
+        else {
+            requestBody = body ? JSON.stringify(body) : undefined;
+            additionalHeaders["Content-Type"] = "application/json";
+        }
         const options = {
             method: method,
             headers: {
                 Accept: "application/json",
-                "Content-Type": "application/json",
                 ...additionalHeaders,
             },
             cache: "no-store",
-            body: body ? JSON.stringify(body) : undefined,
+            body: requestBody,
         };
         if (token) {
             options.headers = {
@@ -147,16 +166,16 @@ class ApiDataFactory {
             throw new Error(data.error);
         return data.data;
     }
-    static async post(classKey, params, body) {
+    static async post(classKey, params, body, files) {
         if (!body)
             body = {};
-        return this._request("POST", classKey, params, body);
+        return this._request("POST", classKey, params, body, files);
     }
-    static async put(classKey, params, body) {
-        return this._request("PUT", classKey, params, body);
+    static async put(classKey, params, body, files) {
+        return this._request("PUT", classKey, params, body, files);
     }
-    static async patch(classKey, params, body) {
-        return this._request("PATCH", classKey, params, body);
+    static async patch(classKey, params, body, files) {
+        return this._request("PATCH", classKey, params, body, files);
     }
     static async delete(classKey, params) {
         return this._request("DELETE", classKey, params);
