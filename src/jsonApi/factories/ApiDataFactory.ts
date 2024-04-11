@@ -17,7 +17,7 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
-    files?: FileList | { [key: string]: File },
+    files?: FileList | File | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     const factoryClass = this.classMap.get(classKey);
 
@@ -202,7 +202,7 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
-    files?: FileList | { [key: string]: File },
+    files?: FileList | File | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     if (!body) body = {};
     return this._request<T>("POST", classKey, params, body, files);
@@ -212,7 +212,7 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
-    files?: FileList | { [key: string]: File },
+    files?: FileList | File | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     return this._request<T>("PUT", classKey, params, body, files);
   }
@@ -221,7 +221,7 @@ export class ApiDataFactory {
     classKey: string,
     params?: any,
     body?: any,
-    files?: FileList | { [key: string]: File },
+    files?: FileList | File | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
     return this._request<T>("PATCH", classKey, params, body, files);
   }
