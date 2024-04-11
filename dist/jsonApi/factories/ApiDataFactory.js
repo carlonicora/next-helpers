@@ -59,6 +59,8 @@ class ApiDataFactory {
                 link = apiUrl + link;
         }
         else {
+            console.log((0, cookies_next_1.getCookie)("next-auth.session-token"));
+            console.log((0, cookies_next_1.getCookie)("__Secure-next-auth.session-token"));
             siteId = (0, cookies_next_1.getCookie)("siteId") ?? "";
             if (link.startsWith("http"))
                 link = link.substring(apiUrl?.length ?? 0);
@@ -76,21 +78,29 @@ class ApiDataFactory {
         let requestBody = undefined;
         if (files) {
             const formData = new FormData();
-            if (typeof files === "object" && !(files instanceof FileList)) {
-                Object.keys(files).forEach((key) => formData.append(key, files[key]));
-            }
-            else {
-                for (let i = 0; i < files.length; i++) {
-                    formData.append(`file${i}`, files[i]);
+            if (body && typeof body === "object") {
+                for (const key in body) {
+                    if (body.hasOwnProperty(key)) {
+                        formData.append(key, body[key]);
+                    }
                 }
             }
-            if (body && Object.keys(body).length > 0) {
-                formData.append("json", JSON.stringify(body));
+            if (files instanceof FileList) {
+                for (let i = 0; i < files.length; i++) {
+                    formData.append("file" + i, files[i]);
+                }
+            }
+            else {
+                for (const key in files) {
+                    if (files.hasOwnProperty(key)) {
+                        formData.append(key, files[key]);
+                    }
+                }
             }
             requestBody = formData;
         }
         else {
-            requestBody = body ? JSON.stringify(body) : undefined;
+            requestBody = JSON.stringify(body);
             additionalHeaders["Content-Type"] = "application/json";
         }
         const options = {
