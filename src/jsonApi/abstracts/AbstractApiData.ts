@@ -3,79 +3,113 @@ import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { JsonApiHydratedDataInterface } from "../interfaces/JsonApiHydratedDataInterface";
 
 export abstract class AbstractApiData implements ApiDataInterface {
-	get included(): any[] {
-		throw new Error("Method not implemented.");
-	}
-	protected _jsonApi?: any;
-	protected _included?: any[];
-	protected _id?: string;
-	protected _self?: string;
+  protected _jsonApi?: any;
+  protected _included?: any[];
 
-	get id(): string {
-		if (!this._id) throw new Error("Grocery ID is not set.");
-		return this._id;
-	}
+  protected _id?: string;
+  protected _createdAt?: Date;
+  protected _updatedAt?: Date;
 
-	get self(): string | undefined {
-		return this._self;
-	}
+  protected _self?: string;
 
-	ingestJsonApi(data: JsonApiHydratedDataInterface): void {}
+  get id(): string {
+    if (!this._id) throw new Error("Grocery ID is not set.");
+    return this._id;
+  }
 
-	abstract generateApiUrl(params?: any): string;
-	abstract createJsonApi(data: any): any;
+  get self(): string | undefined {
+    return this._self;
+  }
 
-	protected _readIncluded<T extends ApiDataInterface>(
-		data: JsonApiHydratedDataInterface,
-		type: string,
-		classKey: string
-	): T | T[] {
-		if (
-			data.included === undefined ||
-			data.included.length === 0 ||
-			data.jsonApi.relationships === undefined ||
-			data.jsonApi.relationships[type] === undefined ||
-			data.jsonApi.relationships[type].data === undefined
-		)
-			return [];
+  get createdAt(): Date | undefined {
+    return this._createdAt;
+  }
 
-		if (Array.isArray(data.jsonApi.relationships[type].data)) {
-			const response: T[] = data.jsonApi.relationships[type].data.map((jsonApiData: any) => {
-				const includedData = data.included.find(
-					(includedData: any) => includedData.id === jsonApiData.id && includedData.type === jsonApiData.type
-				);
+  get updatedAt(): Date | undefined {
+    return this._updatedAt;
+  }
 
-				if (includedData === undefined) return undefined;
+  get included(): any[] {
+    return this._included ?? [];
+  }
 
-				return RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included });
-			});
+  ingestJsonApi(data: JsonApiHydratedDataInterface): void {}
 
-			return response.filter((item: T | undefined) => item !== undefined) as T[];
-		}
+  abstract generateApiUrl(params?: any): string;
+  abstract createJsonApi(data: any): any;
 
-		const includedData = data.included.find(
-			(includedData: any) =>
-				includedData.id === data.jsonApi.relationships[type].data.id &&
-				includedData.type === data.jsonApi.relationships[type].data.type
-		);
+  protected _readIncluded<T extends ApiDataInterface>(
+    data: JsonApiHydratedDataInterface,
+    type: string,
+    dataType: string,
+  ): T | T[] {
+    if (
+      data.included === undefined ||
+      data.included.length === 0 ||
+      data.jsonApi.relationships === undefined ||
+      data.jsonApi.relationships[type] === undefined ||
+      data.jsonApi.relationships[type].data === undefined
+    )
+      return [];
 
-		return RehydrationFactory.rehydrate(classKey, { jsonApi: includedData, included: data.included }) as T;
-	}
+    if (Array.isArray(data.jsonApi.relationships[type].data)) {
+      const response: T[] = data.jsonApi.relationships[type].data.map(
+        (jsonApiData: any) => {
+          const includedData = data.included.find(
+            (includedData: any) =>
+              includedData.id === jsonApiData.id &&
+              includedData.type === jsonApiData.type,
+          );
 
-	dehydrate(): JsonApiHydratedDataInterface {
-		return {
-			jsonApi: this._jsonApi,
-			included: this._included ?? [],
-		};
-	}
+          if (includedData === undefined) return undefined;
 
-	rehydrate(data: JsonApiHydratedDataInterface): this {
-		this._jsonApi = data.jsonApi;
-		this._included = data.included;
+          return RehydrationFactory.rehydrate(dataType, {
+            jsonApi: includedData,
+            included: data.included,
+          }) as T;
+        },
+      );
 
-		this._id = this._jsonApi.id;
-		this._self = this._jsonApi.links?.self ?? undefined;
+      return response.filter(
+        (item: T | undefined) => item !== undefined,
+      ) as T[];
+    }
 
-		return this;
-	}
+    const includedData = data.included.find(
+      (includedData: any) =>
+        includedData.id === data.jsonApi.relationships[type].data.id &&
+        includedData.type === data.jsonApi.relationships[type].data.type,
+    );
+
+    return RehydrationFactory.rehydrate(dataType, {
+      jsonApi: includedData,
+      included: data.included,
+    }) as T;
+  }
+
+  dehydrate(): JsonApiHydratedDataInterface {
+    return {
+      jsonApi: this._jsonApi,
+      included: this._included ?? [],
+    };
+  }
+
+  rehydrate(data: JsonApiHydratedDataInterface): this {
+    this._jsonApi = data.jsonApi;
+    this._included = data.included;
+
+    this._id = this._jsonApi.id;
+    this._createdAt =
+      this._jsonApi.meta.createdAt !== undefined
+        ? new Date(this._jsonApi.meta.createdAt)
+        : undefined;
+    this._updatedAt =
+      this._jsonApi.meta.updatedAt !== undefined
+        ? new Date(this._jsonApi.meta.updatedAt)
+        : undefined;
+
+    this._self = this._jsonApi.links?.self ?? undefined;
+
+    return this;
+  }
 }
