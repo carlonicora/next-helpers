@@ -59,8 +59,6 @@ class ApiDataFactory {
                 link = apiUrl + link;
         }
         else {
-            console.log((0, cookies_next_1.getCookie)("next-auth.session-token"));
-            console.log((0, cookies_next_1.getCookie)("__Secure-next-auth.session-token"));
             siteId = (0, cookies_next_1.getCookie)("siteId") ?? "";
             if (link.startsWith("http"))
                 link = link.substring(apiUrl?.length ?? 0);
@@ -80,8 +78,10 @@ class ApiDataFactory {
             const formData = new FormData();
             if (body && typeof body === "object") {
                 for (const key in body) {
-                    if (body.hasOwnProperty(key)) {
-                        formData.append(key, body[key]);
+                    if (Object.prototype.hasOwnProperty.call(body, key)) {
+                        formData.append(key, typeof body[key] === "object"
+                            ? JSON.stringify(body[key])
+                            : body[key]);
                     }
                 }
             }
@@ -89,6 +89,9 @@ class ApiDataFactory {
                 for (let i = 0; i < files.length; i++) {
                     formData.append("file" + i, files[i]);
                 }
+            }
+            else if (files instanceof File) {
+                formData.append("file", files);
             }
             else {
                 for (const key in files) {

@@ -51,8 +51,6 @@ export class ApiDataFactory {
         undefined;
       if (!link.startsWith("http")) link = apiUrl + link;
     } else {
-      console.log(getCookie("next-auth.session-token"));
-      console.log(getCookie("__Secure-next-auth.session-token"));
       siteId = getCookie("siteId") ?? "";
       if (link.startsWith("http")) link = link.substring(apiUrl?.length ?? 0);
       link = "/api/nexthelper?uri=" + encodeURIComponent(link);
@@ -74,8 +72,13 @@ export class ApiDataFactory {
       const formData = new FormData();
       if (body && typeof body === "object") {
         for (const key in body) {
-          if (body.hasOwnProperty(key)) {
-            formData.append(key, body[key]);
+          if (Object.prototype.hasOwnProperty.call(body, key)) {
+            formData.append(
+              key,
+              typeof body[key] === "object"
+                ? JSON.stringify(body[key])
+                : body[key],
+            );
           }
         }
       }
@@ -83,6 +86,8 @@ export class ApiDataFactory {
         for (let i = 0; i < files.length; i++) {
           formData.append("file" + i, files[i]);
         }
+      } else if (files instanceof File) {
+        formData.append("file", files);
       } else {
         for (const key in files) {
           if (files.hasOwnProperty(key)) {
@@ -90,8 +95,8 @@ export class ApiDataFactory {
           }
         }
       }
+
       requestBody = formData;
-      // Don't set Content-Type for FormData; let the browser do it
     } else {
       requestBody = JSON.stringify(body);
       additionalHeaders["Content-Type"] = "application/json";
