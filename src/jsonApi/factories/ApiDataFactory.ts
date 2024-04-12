@@ -44,6 +44,7 @@ export class ApiDataFactory {
       const cookieStore = serverCookies.cookies();
 
       siteId = cookieStore.get("siteId")?.value ?? "";
+      apiUrl = apiUrl.replace("*", siteId);
 
       token =
         cookieStore.get("next-auth.session-token")?.value ??
@@ -52,7 +53,9 @@ export class ApiDataFactory {
       if (!link.startsWith("http")) link = apiUrl + link;
     } else {
       siteId = getCookie("siteId") ?? "";
+      apiUrl = apiUrl.replace("*", siteId);
       if (link.startsWith("http")) link = link.substring(apiUrl?.length ?? 0);
+
       link = "/api/nexthelper?uri=" + encodeURIComponent(link);
     }
 
