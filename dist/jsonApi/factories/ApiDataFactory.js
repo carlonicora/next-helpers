@@ -121,7 +121,6 @@ class ApiDataFactory {
             body: requestBody,
         };
         if (typeof classKey !== "string" && classKey.cache && method === "GET") {
-            options.cache = "force-cache";
             options.next = {
                 revalidate: classKey.cache,
             };

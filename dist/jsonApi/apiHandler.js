@@ -51,7 +51,6 @@ async function handleRequest(req, res, method) {
         headers: headers,
     };
     if (headers["next-helper-cache"]) {
-        options.cache = "force-cache";
         options.next = {
             revalidate: parseInt(headers["next-helper-cache"]),
         };

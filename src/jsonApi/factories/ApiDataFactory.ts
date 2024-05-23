@@ -125,7 +125,6 @@ export class ApiDataFactory {
     };
 
     if (typeof classKey !== "string" && classKey.cache && method === "GET") {
-      options.cache = "force-cache";
       //@ts-ignore
       options.next = {
         revalidate: classKey.cache,

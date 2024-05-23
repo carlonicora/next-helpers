@@ -40,7 +40,6 @@ export async function handleRequest(
   };
 
   if (headers["next-helper-cache"]) {
-    options.cache = "force-cache";
     //@ts-ignore
     options.next = {
       revalidate: parseInt(headers["next-helper-cache"]),
