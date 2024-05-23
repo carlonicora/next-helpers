@@ -31,9 +31,11 @@ class ApiDataFactory {
             this.classMap.set(key, classConstructor);
     }
     static async _request(method, classKey, params, body, files) {
-        const factoryClass = this.classMap.get(classKey);
+        const factoryClass = typeof classKey === "string"
+            ? this.classMap.get(classKey)
+            : this.classMap.get(classKey.name);
         if (!factoryClass) {
-            throw new Error(`Class not registered for key: ${classKey}`);
+            throw new Error(`Class not registered for key: ${typeof classKey === "string" ? classKey : classKey.name}`);
         }
         const response = {
             ok: true,
@@ -115,6 +117,11 @@ class ApiDataFactory {
             cache: "no-store",
             body: requestBody,
         };
+        if (typeof classKey !== "string" && classKey.cache && method === "GET") {
+            options.next = {
+                revalidate: classKey.cache,
+            };
+        }
         if (token) {
             options.headers = {
                 ...options.headers,
@@ -143,11 +150,11 @@ class ApiDataFactory {
                 response.self = jsonApi.links.self;
                 if (jsonApi.links.next) {
                     response.next = jsonApi.links.next;
-                    response.nextPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.next });
+                    response.nextPage = async () => ApiDataFactory.get(typeof classKey === "string" ? classKey : classKey.name, { link: jsonApi.links.next });
                 }
                 if (jsonApi.links.prev) {
                     response.prev = jsonApi.links.prev;
-                    response.prevPage = async () => ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
+                    response.prevPage = async () => ApiDataFactory.get(typeof classKey === "string" ? classKey : classKey.name, { link: jsonApi.links.prev });
                 }
             }
             if (Array.isArray(jsonApi.data)) {
