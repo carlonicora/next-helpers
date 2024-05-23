@@ -25,9 +25,7 @@ export async function handleRequest(
 
   const headers: HeadersInit = {};
   req.headers.forEach((value, key) => {
-    if (key !== "host") {
-      headers[key] = value;
-    }
+    if (key !== "host") headers[key] = value;
   });
 
   if (jwt) headers["Authorization"] = `Bearer ${jwt}`;
@@ -40,6 +38,16 @@ export async function handleRequest(
     method: method,
     headers: headers,
   };
+
+  if (headers["next-helper-cache"]) {
+    options.cache = "force-cache";
+    //@ts-ignore
+    options.next = {
+      revalidate: parseInt(headers["next-helper-cache"]),
+    };
+  } else {
+    options.cache = "no-store";
+  }
 
   if (["POST", "PUT", "PATCH"].includes(method) && isMultipart) {
     options.body = req.body;

@@ -38,9 +38,8 @@ async function handleRequest(req, res, method) {
         cookieStore.get("__Secure-next-auth.session-token")?.value;
     const headers = {};
     req.headers.forEach((value, key) => {
-        if (key !== "host") {
+        if (key !== "host")
             headers[key] = value;
-        }
     });
     if (jwt)
         headers["Authorization"] = `Bearer ${jwt}`;
@@ -51,6 +50,15 @@ async function handleRequest(req, res, method) {
         method: method,
         headers: headers,
     };
+    if (headers["next-helper-cache"]) {
+        options.cache = "force-cache";
+        options.next = {
+            revalidate: parseInt(headers["next-helper-cache"]),
+        };
+    }
+    else {
+        options.cache = "no-store";
+    }
     if (["POST", "PUT", "PATCH"].includes(method) && isMultipart) {
         options.body = req.body;
         options.duplex = "half";

@@ -75,6 +75,8 @@ export class ApiDataFactory {
           additionalHeaders[key] = params.headers[key];
       });
     }
+    if (typeof classKey !== "string" && classKey.cache)
+      additionalHeaders["next-helper-cache"] = classKey.cache;
 
     let requestBody: BodyInit | undefined = undefined;
 
@@ -123,7 +125,7 @@ export class ApiDataFactory {
     };
 
     if (typeof classKey !== "string" && classKey.cache && method === "GET") {
-      // options.cache = 'force-cache';
+      options.cache = "force-cache";
       //@ts-ignore
       options.next = {
         revalidate: classKey.cache,
