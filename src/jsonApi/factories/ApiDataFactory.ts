@@ -7,10 +7,12 @@ export class ApiDataFactory {
   public static classMap = new Map<string, { new (): ApiDataInterface }>();
 
   public static registerObjectClass(
-    key: string,
+    key: string | ApiRequestDataTypeInterface,
     classConstructor: { new (): ApiDataInterface },
   ) {
-    if (!this.classMap.has(key)) this.classMap.set(key, classConstructor);
+    const classKey = typeof key === "string" ? key : key.name;
+    if (!this.classMap.has(classKey))
+      this.classMap.set(classKey, classConstructor);
   }
 
   private static async _request<T extends ApiDataInterface>(

@@ -27,8 +27,9 @@ exports.ApiDataFactory = void 0;
 const cookies_next_1 = require("cookies-next");
 class ApiDataFactory {
     static registerObjectClass(key, classConstructor) {
-        if (!this.classMap.has(key))
-            this.classMap.set(key, classConstructor);
+        const classKey = typeof key === "string" ? key : key.name;
+        if (!this.classMap.has(classKey))
+            this.classMap.set(classKey, classConstructor);
     }
     static async _request(method, classKey, params, body, files) {
         const factoryClass = typeof classKey === "string"

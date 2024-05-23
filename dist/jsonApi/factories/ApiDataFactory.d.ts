@@ -3,7 +3,7 @@ import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInt
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 export declare class ApiDataFactory {
     static classMap: Map<string, new () => ApiDataInterface>;
-    static registerObjectClass(key: string, classConstructor: {
+    static registerObjectClass(key: string | ApiRequestDataTypeInterface, classConstructor: {
         new (): ApiDataInterface;
     }): void;
     private static _request;
