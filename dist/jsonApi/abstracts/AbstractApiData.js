@@ -40,6 +40,8 @@ class AbstractApiData {
         }
         const includedData = data.included.find((includedData) => includedData.id === data.jsonApi.relationships[type].data.id &&
             includedData.type === data.jsonApi.relationships[type].data.type);
+        if (includedData === undefined)
+            return undefined;
         return RehydrationFactory_1.RehydrationFactory.rehydrate(typeof dataType === "string" ? dataType : dataType.name, { jsonApi: includedData, included: data.included });
     }
     dehydrate() {

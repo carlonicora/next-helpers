@@ -82,6 +82,8 @@ export abstract class AbstractApiData implements ApiDataInterface {
         includedData.type === data.jsonApi.relationships[type].data.type,
     );
 
+    if (includedData === undefined) return undefined;
+
     return RehydrationFactory.rehydrate(
       typeof dataType === "string" ? dataType : dataType.name,
       { jsonApi: includedData, included: data.included },
