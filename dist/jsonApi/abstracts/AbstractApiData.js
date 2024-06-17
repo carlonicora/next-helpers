@@ -27,7 +27,7 @@ class AbstractApiData {
             data.jsonApi.relationships === undefined ||
             data.jsonApi.relationships[type] === undefined ||
             data.jsonApi.relationships[type].data === undefined)
-            return [];
+            return undefined;
         if (Array.isArray(data.jsonApi.relationships[type].data)) {
             const response = data.jsonApi.relationships[type].data.map((jsonApiData) => {
                 const includedData = data.included.find((includedData) => includedData.id === jsonApiData.id &&

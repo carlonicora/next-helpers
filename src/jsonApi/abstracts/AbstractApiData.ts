@@ -51,7 +51,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
       data.jsonApi.relationships[type] === undefined ||
       data.jsonApi.relationships[type].data === undefined
     )
-      return [];
+      return undefined;
 
     if (Array.isArray(data.jsonApi.relationships[type].data)) {
       const response: T[] = data.jsonApi.relationships[type].data.map(
