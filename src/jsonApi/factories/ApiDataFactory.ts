@@ -1,28 +1,38 @@
 import { getCookie } from "cookies-next";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
+import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
 
 export class ApiDataFactory {
   public static classMap = new Map<string, { new (): ApiDataInterface }>();
 
   public static registerObjectClass(
-    key: string,
+    key: string | ApiRequestDataTypeInterface,
     classConstructor: { new (): ApiDataInterface },
   ) {
-    if (!this.classMap.has(key)) this.classMap.set(key, classConstructor);
+    const classKey = typeof key === "string" ? key : key.name;
+    if (!this.classMap.has(classKey))
+      this.classMap.set(classKey, classConstructor);
   }
 
   private static async _request<T extends ApiDataInterface>(
     method: string,
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
     body?: any,
     files?: FileList | File | { [key: string]: File },
   ): Promise<ApiResponseInterface> {
-    const factoryClass = this.classMap.get(classKey);
+    const factoryClass =
+      typeof classKey === "string"
+        ? this.classMap.get(classKey)
+        : this.classMap.get(classKey.name);
 
     if (!factoryClass) {
-      throw new Error(`Class not registered for key: ${classKey}`);
+      throw new Error(
+        `Class not registered for key: ${
+          typeof classKey === "string" ? classKey : classKey.name
+        }`,
+      );
     }
 
     const response: ApiResponseInterface = {
@@ -68,6 +78,8 @@ export class ApiDataFactory {
           additionalHeaders[key] = params.headers[key];
       });
     }
+    if (typeof classKey !== "string" && classKey.cache)
+      additionalHeaders["next-helper-cache"] = classKey.cache;
 
     let requestBody: BodyInit | undefined = undefined;
 
@@ -115,6 +127,13 @@ export class ApiDataFactory {
       body: requestBody,
     };
 
+    if (typeof classKey !== "string" && classKey.cache && method === "GET") {
+      //@ts-ignore
+      options.next = {
+        revalidate: classKey.cache,
+      };
+    }
+
     if (token) {
       options.headers = {
         ...options.headers,
@@ -150,13 +169,19 @@ export class ApiDataFactory {
         if (jsonApi.links.next) {
           response.next = jsonApi.links.next;
           response.nextPage = async () =>
-            ApiDataFactory.get(classKey, { link: jsonApi.links.next });
+            ApiDataFactory.get(
+              typeof classKey === "string" ? classKey : classKey.name,
+              { link: jsonApi.links.next },
+            );
         }
 
         if (jsonApi.links.prev) {
           response.prev = jsonApi.links.prev;
           response.prevPage = async () =>
-            ApiDataFactory.get(classKey, { link: jsonApi.links.prev });
+            ApiDataFactory.get(
+              typeof classKey === "string" ? classKey : classKey.name,
+              { link: jsonApi.links.prev },
+            );
         }
       }
 
@@ -184,14 +209,14 @@ export class ApiDataFactory {
   }
 
   public static async get<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
   ): Promise<ApiResponseInterface> {
     return this._request<T>("GET", classKey, params);
   }
 
   public static async getData<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
   ): Promise<T | T[]> {
     const data = await this.get<T>(classKey, params);
@@ -202,7 +227,7 @@ export class ApiDataFactory {
   }
 
   public static async post<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
     body?: any,
     files?: FileList | File | { [key: string]: File },
@@ -212,7 +237,7 @@ export class ApiDataFactory {
   }
 
   public static async put<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
     body?: any,
     files?: FileList | File | { [key: string]: File },
@@ -221,7 +246,7 @@ export class ApiDataFactory {
   }
 
   public static async patch<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
     body?: any,
     files?: FileList | File | { [key: string]: File },
@@ -230,7 +255,7 @@ export class ApiDataFactory {
   }
 
   public static async delete<T extends ApiDataInterface>(
-    classKey: string,
+    classKey: string | ApiRequestDataTypeInterface,
     params?: any,
   ): Promise<ApiResponseInterface> {
     return this._request<T>("DELETE", classKey, params);

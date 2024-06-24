@@ -1,5 +1,6 @@
 import { RehydrationFactory } from "../factories/RehydrationFactory";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
+import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInterface";
 import { JsonApiHydratedDataInterface } from "../interfaces/JsonApiHydratedDataInterface";
 
 export abstract class AbstractApiData implements ApiDataInterface {
@@ -41,7 +42,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
   protected _readIncluded<T extends ApiDataInterface>(
     data: JsonApiHydratedDataInterface,
     type: string,
-    dataType: string,
+    dataType: string | ApiRequestDataTypeInterface,
   ): T | T[] {
     if (
       data.included === undefined ||
@@ -50,7 +51,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
       data.jsonApi.relationships[type] === undefined ||
       data.jsonApi.relationships[type].data === undefined
     )
-      return [];
+      return undefined;
 
     if (Array.isArray(data.jsonApi.relationships[type].data)) {
       const response: T[] = data.jsonApi.relationships[type].data.map(
@@ -63,10 +64,10 @@ export abstract class AbstractApiData implements ApiDataInterface {
 
           if (includedData === undefined) return undefined;
 
-          return RehydrationFactory.rehydrate(dataType, {
-            jsonApi: includedData,
-            included: data.included,
-          }) as T;
+          return RehydrationFactory.rehydrate(
+            typeof dataType === "string" ? dataType : dataType.name,
+            { jsonApi: includedData, included: data.included },
+          ) as T;
         },
       );
 
@@ -81,10 +82,12 @@ export abstract class AbstractApiData implements ApiDataInterface {
         includedData.type === data.jsonApi.relationships[type].data.type,
     );
 
-    return RehydrationFactory.rehydrate(dataType, {
-      jsonApi: includedData,
-      included: data.included,
-    }) as T;
+    if (includedData === undefined) return undefined;
+
+    return RehydrationFactory.rehydrate(
+      typeof dataType === "string" ? dataType : dataType.name,
+      { jsonApi: includedData, included: data.included },
+    ) as T;
   }
 
   dehydrate(): JsonApiHydratedDataInterface {
