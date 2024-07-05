@@ -109,7 +109,7 @@ class ApiDataFactory {
             }
             requestBody = formData;
         }
-        else {
+        else if (body !== undefined) {
             requestBody = JSON.stringify(body);
             additionalHeaders["Content-Type"] = "application/json";
         }
@@ -119,13 +119,19 @@ class ApiDataFactory {
                 Accept: "application/json",
                 ...additionalHeaders,
             },
-            cache: "no-store",
-            body: requestBody,
         };
-        if (typeof classKey !== "string" && classKey.cache && method === "GET") {
+        if (requestBody !== undefined)
+            options.body = requestBody;
+        if (typeof classKey !== "string" &&
+            classKey.cache &&
+            classKey.cache > 0 &&
+            method === "GET") {
             options.next = {
                 revalidate: classKey.cache,
             };
+        }
+        else {
+            options.cache = "no-store";
         }
         if (token) {
             options.headers = {
