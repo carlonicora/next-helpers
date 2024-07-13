@@ -1,4 +1,3 @@
-import { getCookie } from "cookies-next";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
@@ -46,30 +45,19 @@ export class ApiDataFactory {
     if (!link) link = new factoryClass().generateApiUrl(params);
 
     let apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-    let siteId = "";
 
     let token: string | undefined = undefined;
     if (typeof window === "undefined") {
       const serverCookies = await import("next/headers");
       const cookieStore = serverCookies.cookies();
 
-      siteId = cookieStore.get("siteId")?.value ?? "";
-      apiUrl = apiUrl.replace("*", siteId);
-
-      token =
-        cookieStore.get("next-auth.session-token")?.value ??
-        cookieStore.get("__Secure-next-auth.session-token")?.value ??
-        undefined;
+      token = cookieStore.get("token")?.value ?? undefined;
       if (!link.startsWith("http")) link = apiUrl + link;
     } else {
-      siteId = getCookie("siteId") ?? "";
-      apiUrl = apiUrl.replace("*", siteId);
       if (link.startsWith("http")) link = link.substring(apiUrl?.length ?? 0);
 
       link = "/api/nexthelper?uri=" + encodeURIComponent(link);
     }
-
-    if (siteId !== "") link = link.replace("*", siteId);
 
     const additionalHeaders: any = {};
     if (params?.headers) {
@@ -152,6 +140,36 @@ export class ApiDataFactory {
 
     response.ok = apiResponse.ok;
     response.response = apiResponse.status;
+
+    if (apiResponse.status === 401 && typeof window === "undefined") {
+      const serverCookies = await import("next/headers");
+      const cookieStore = serverCookies.cookies();
+
+      if (cookieStore.get("refreshToken")?.value) {
+        const refreshedTokenResponse = await this.post("auth", {
+          refreshToken: cookieStore.get("refreshToken")?.value,
+        });
+
+        if (refreshedTokenResponse.ok) {
+          const data: any = refreshedTokenResponse.data as any;
+
+          cookieStore.set({
+            name: "token",
+            value: data.token,
+            httpOnly: true,
+            path: "/",
+          });
+          cookieStore.set({
+            name: "refreshToken",
+            value: data.refreshToken,
+            httpOnly: true,
+            path: "/",
+          });
+
+          return await this._request(method, classKey, params, body, files);
+        }
+      }
+    }
 
     if (!apiResponse.ok) {
       try {

@@ -24,7 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
-const cookies_next_1 = require("cookies-next");
 class ApiDataFactory {
     static registerObjectClass(key, classConstructor) {
         const classKey = typeof key === "string" ? key : key.name;
@@ -48,29 +47,19 @@ class ApiDataFactory {
         if (!link)
             link = new factoryClass().generateApiUrl(params);
         let apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-        let siteId = "";
         let token = undefined;
         if (typeof window === "undefined") {
             const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
             const cookieStore = serverCookies.cookies();
-            siteId = cookieStore.get("siteId")?.value ?? "";
-            apiUrl = apiUrl.replace("*", siteId);
-            token =
-                cookieStore.get("next-auth.session-token")?.value ??
-                    cookieStore.get("__Secure-next-auth.session-token")?.value ??
-                    undefined;
+            token = cookieStore.get("token")?.value ?? undefined;
             if (!link.startsWith("http"))
                 link = apiUrl + link;
         }
         else {
-            siteId = (0, cookies_next_1.getCookie)("siteId") ?? "";
-            apiUrl = apiUrl.replace("*", siteId);
             if (link.startsWith("http"))
                 link = link.substring(apiUrl?.length ?? 0);
             link = "/api/nexthelper?uri=" + encodeURIComponent(link);
         }
-        if (siteId !== "")
-            link = link.replace("*", siteId);
         const additionalHeaders = {};
         if (params?.headers) {
             Object.keys(params.headers).forEach((key) => {
@@ -142,6 +131,31 @@ class ApiDataFactory {
         const apiResponse = await fetch(link, options);
         response.ok = apiResponse.ok;
         response.response = apiResponse.status;
+        if (apiResponse.status === 401 && typeof window === "undefined") {
+            const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
+            const cookieStore = serverCookies.cookies();
+            if (cookieStore.get("refreshToken")?.value) {
+                const refreshedTokenResponse = await this.post("auth", {
+                    refreshToken: cookieStore.get("refreshToken")?.value,
+                });
+                if (refreshedTokenResponse.ok) {
+                    const data = refreshedTokenResponse.data;
+                    cookieStore.set({
+                        name: "token",
+                        value: data.token,
+                        httpOnly: true,
+                        path: "/",
+                    });
+                    cookieStore.set({
+                        name: "refreshToken",
+                        value: data.refreshToken,
+                        httpOnly: true,
+                        path: "/",
+                    });
+                    return await this._request(method, classKey, params, body, files);
+                }
+            }
+        }
         if (!apiResponse.ok) {
             try {
                 const json = await apiResponse.json();

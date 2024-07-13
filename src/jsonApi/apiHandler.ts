@@ -19,9 +19,7 @@ export async function handleRequest(
     uri = apiUrl + uri;
   }
 
-  const jwt =
-    cookieStore.get("next-auth.session-token")?.value ??
-    cookieStore.get("__Secure-next-auth.session-token")?.value;
+  const jwt = cookieStore.get("token")?.value;
 
   const headers: HeadersInit = {};
   req.headers.forEach((value, key) => {
@@ -56,7 +54,42 @@ export async function handleRequest(
     options.body = await req.text();
   }
 
-  return await fetch(uri, options);
+  const response = await fetch(uri, options);
+
+  if (response.status === 401) {
+    const refreshToken = cookieStore.get("refreshToken")?.value ?? undefined;
+
+    if (refreshToken !== undefined) {
+      const headers: HeadersInit = {};
+      const options: RequestInit = {
+        method: "POST",
+        headers: headers,
+      };
+      const uri = `${process.env.NEXT_PUBLIC_API_URL}auth/refreshtoken/${refreshToken}`;
+
+      const tokenRefreshResponse = await fetch(uri, options);
+      if (tokenRefreshResponse.ok) {
+        const data = await tokenRefreshResponse.json();
+
+        cookieStore.set({
+          name: "token",
+          value: data.data.attributes.token,
+          httpOnly: true,
+          path: "/",
+        });
+        cookieStore.set({
+          name: "refreshToken",
+          value: data.data.attributes.refreshToken,
+          httpOnly: true,
+          path: "/",
+        });
+
+        return await handleRequest(req, res, method);
+      }
+    }
+  }
+
+  return response;
 }
 
 export async function GET(req: NextRequest, res: NextApiResponse) {

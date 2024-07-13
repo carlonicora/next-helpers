@@ -1,6 +1,6 @@
 {
   "name": "next-helper",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "description": " A helpers library for Next.js",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
