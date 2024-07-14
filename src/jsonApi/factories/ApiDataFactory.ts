@@ -1,3 +1,4 @@
+import { updateToken } from "src/auth/CookieAuth";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
@@ -153,17 +154,9 @@ export class ApiDataFactory {
         if (refreshedTokenResponse.ok) {
           const data: any = refreshedTokenResponse.data as any;
 
-          cookieStore.set({
-            name: "token",
-            value: data.token,
-            httpOnly: true,
-            path: "/",
-          });
-          cookieStore.set({
-            name: "refreshToken",
-            value: data.refreshToken,
-            httpOnly: true,
-            path: "/",
+          await updateToken({
+            token: data.token,
+            refreshToken: data.refreshToken,
           });
 
           return await this._request(method, classKey, params, body, files);

@@ -1,3 +1,4 @@
+export { updateToken } from "./auth/CookieAuth";
 export { AbstractApiData } from "./jsonApi/abstracts/AbstractApiData";
 export {
   DELETE,

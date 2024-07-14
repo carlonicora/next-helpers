@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
+const CookieAuth_1 = require("src/auth/CookieAuth");
 class ApiDataFactory {
     static registerObjectClass(key, classConstructor) {
         const classKey = typeof key === "string" ? key : key.name;
@@ -140,17 +141,9 @@ class ApiDataFactory {
                 });
                 if (refreshedTokenResponse.ok) {
                     const data = refreshedTokenResponse.data;
-                    cookieStore.set({
-                        name: "token",
-                        value: data.token,
-                        httpOnly: true,
-                        path: "/",
-                    });
-                    cookieStore.set({
-                        name: "refreshToken",
-                        value: data.refreshToken,
-                        httpOnly: true,
-                        path: "/",
+                    await (0, CookieAuth_1.updateToken)({
+                        token: data.token,
+                        refreshToken: data.refreshToken,
                     });
                     return await this._request(method, classKey, params, body, files);
                 }

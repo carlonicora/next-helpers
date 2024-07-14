@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RehydrationFactory = exports.JsonApiDataFactory = exports.ApiDataFactory = exports.handleRequest = exports.PUT = exports.POST = exports.PATCH = exports.GET = exports.DELETE = exports.AbstractApiData = void 0;
+exports.RehydrationFactory = exports.JsonApiDataFactory = exports.ApiDataFactory = exports.handleRequest = exports.PUT = exports.POST = exports.PATCH = exports.GET = exports.DELETE = exports.AbstractApiData = exports.updateToken = void 0;
+var CookieAuth_1 = require("./auth/CookieAuth");
+Object.defineProperty(exports, "updateToken", { enumerable: true, get: function () { return CookieAuth_1.updateToken; } });
 var AbstractApiData_1 = require("./jsonApi/abstracts/AbstractApiData");
 Object.defineProperty(exports, "AbstractApiData", { enumerable: true, get: function () { return AbstractApiData_1.AbstractApiData; } });
 var apiHandler_1 = require("./jsonApi/apiHandler");
