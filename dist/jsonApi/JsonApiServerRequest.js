@@ -27,7 +27,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonApiServerRequest = void 0;
 const CookieAuth_1 = require("../auth/CookieAuth");
 async function JsonApiServerRequest(method, link, cache, body, files, token) {
-    "use server";
     const response = {
         data: undefined,
         ok: false,

@@ -11,8 +11,6 @@ export async function JsonApiServerRequest(
   files?: FileList | File | { [key: string]: File },
   token?: string,
 ): Promise<ApiData> {
-  "use server";
-
   const response: ApiData = {
     data: undefined,
     ok: false,

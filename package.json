@@ -1,6 +1,6 @@
 {
   "name": "next-helper",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": " A helpers library for Next.js",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,10 @@
   },
   "author": "Carlo Nicora",
   "license": "ISC",
+  "peerDependencies": {
+    "next": ">=14",
+    "react": ">=18.0"
+  },
   "dependencies": {
     "cookies-next": "^4.1.1"
   },
