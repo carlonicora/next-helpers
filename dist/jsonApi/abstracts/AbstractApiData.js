@@ -34,7 +34,10 @@ class AbstractApiData {
                     includedData.type === jsonApiData.type);
                 if (includedData === undefined)
                     return undefined;
-                return RehydrationFactory_1.RehydrationFactory.rehydrate(typeof dataType === "string" ? dataType : dataType.name, { jsonApi: includedData, included: data.included });
+                return RehydrationFactory_1.RehydrationFactory.rehydrate(dataType, {
+                    jsonApi: includedData,
+                    included: data.included,
+                });
             });
             return response.filter((item) => item !== undefined);
         }
@@ -42,7 +45,10 @@ class AbstractApiData {
             includedData.type === data.jsonApi.relationships[type].data.type);
         if (includedData === undefined)
             return undefined;
-        return RehydrationFactory_1.RehydrationFactory.rehydrate(typeof dataType === "string" ? dataType : dataType.name, { jsonApi: includedData, included: data.included });
+        return RehydrationFactory_1.RehydrationFactory.rehydrate(dataType, {
+            jsonApi: includedData,
+            included: data.included,
+        });
     }
     dehydrate() {
         return {

@@ -16,7 +16,7 @@ export declare abstract class AbstractApiData implements ApiDataInterface {
     ingestJsonApi(data: JsonApiHydratedDataInterface): void;
     abstract generateApiUrl(params?: any): string;
     abstract createJsonApi(data: any): any;
-    protected _readIncluded<T extends ApiDataInterface>(data: JsonApiHydratedDataInterface, type: string, dataType: string | ApiRequestDataTypeInterface): T | T[];
+    protected _readIncluded<T extends ApiDataInterface>(data: JsonApiHydratedDataInterface, type: string, dataType: ApiRequestDataTypeInterface): T | T[];
     dehydrate(): JsonApiHydratedDataInterface;
     rehydrate(data: JsonApiHydratedDataInterface): this;
 }

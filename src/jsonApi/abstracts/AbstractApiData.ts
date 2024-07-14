@@ -42,7 +42,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
   protected _readIncluded<T extends ApiDataInterface>(
     data: JsonApiHydratedDataInterface,
     type: string,
-    dataType: string | ApiRequestDataTypeInterface,
+    dataType: ApiRequestDataTypeInterface,
   ): T | T[] {
     if (
       data.included === undefined ||
@@ -64,10 +64,10 @@ export abstract class AbstractApiData implements ApiDataInterface {
 
           if (includedData === undefined) return undefined;
 
-          return RehydrationFactory.rehydrate(
-            typeof dataType === "string" ? dataType : dataType.name,
-            { jsonApi: includedData, included: data.included },
-          ) as T;
+          return RehydrationFactory.rehydrate(dataType, {
+            jsonApi: includedData,
+            included: data.included,
+          }) as T;
         },
       );
 
@@ -84,10 +84,10 @@ export abstract class AbstractApiData implements ApiDataInterface {
 
     if (includedData === undefined) return undefined;
 
-    return RehydrationFactory.rehydrate(
-      typeof dataType === "string" ? dataType : dataType.name,
-      { jsonApi: includedData, included: data.included },
-    ) as T;
+    return RehydrationFactory.rehydrate(dataType, {
+      jsonApi: includedData,
+      included: data.included,
+    }) as T;
   }
 
   dehydrate(): JsonApiHydratedDataInterface {
