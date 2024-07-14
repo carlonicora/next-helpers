@@ -24,7 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiDataFactory = void 0;
-const CookieAuth_1 = require("src/auth/CookieAuth");
+const CookieAuth_1 = require("../../auth/CookieAuth");
 class ApiDataFactory {
     static registerObjectClass(key, classConstructor) {
         const classKey = typeof key === "string" ? key : key.name;

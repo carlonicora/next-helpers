@@ -1,4 +1,4 @@
-import { updateToken } from "src/auth/CookieAuth";
+import { updateToken } from "../../auth/CookieAuth";
 import { ApiDataInterface } from "../interfaces/ApiDataInterface";
 import { ApiRequestDataTypeInterface } from "../interfaces/ApiRequestDataTypeInterface";
 import { ApiResponseInterface } from "../interfaces/ApiResponseInterface";
