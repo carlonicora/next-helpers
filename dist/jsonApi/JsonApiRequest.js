@@ -1,15 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonApiDelete = exports.JsonApiPatch = exports.JsonApiPut = exports.JsonApiPost = exports.JsonApiGetData = exports.JsonApiGet = void 0;
+const CookieAuth_1 = require("../auth/CookieAuth");
 const DataClass_1 = require("../DataClass");
-const JsonApiServerRequest_1 = require("./JsonApiServerRequest");
+const JsonApiServerRequest_1 = require("../jsonApi/JsonApiServerRequest");
 function generateLink(classKey, params) {
-    if (params.link)
+    if (params?.link)
         return params.link;
     const factoryClass = DataClass_1.DataClass.get(classKey);
     return `${process.env.NEXT_PUBLIC_API_URL ?? ""}${new factoryClass().generateApiUrl(params)}`;
 }
 async function translateResponse(classKey, apiResponse) {
+    if (apiResponse.token && apiResponse.refreshToken) {
+        (0, CookieAuth_1.updateToken)({
+            token: apiResponse.token,
+            refreshToken: apiResponse.refreshToken,
+        });
+    }
     const response = {
         ok: true,
         response: 0,
@@ -28,6 +35,7 @@ async function translateResponse(classKey, apiResponse) {
     }
     if (apiResponse.status === 204)
         return response;
+    console.log(apiResponse);
     try {
         const included = apiResponse.data.included ?? [];
         if (apiResponse.data.links) {
@@ -68,37 +76,37 @@ async function translateResponse(classKey, apiResponse) {
     }
     return response;
 }
-async function JsonApiGet(classKey, params, token) {
-    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("GET", generateLink(classKey, params), classKey.cache, undefined, undefined, token);
+async function JsonApiGet(classKey, params) {
+    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("GET", generateLink(classKey, params), classKey.cache);
     return translateResponse(classKey, apiResponse);
 }
 exports.JsonApiGet = JsonApiGet;
-async function JsonApiGetData(classKey, params, token) {
-    const data = await JsonApiGet(classKey, params, token);
+async function JsonApiGetData(classKey, params) {
+    const data = await JsonApiGet(classKey, params);
     if (!data.ok)
         throw new Error(data.error);
     return data.data;
 }
 exports.JsonApiGetData = JsonApiGetData;
-async function JsonApiPost(classKey, params, body, files, token) {
+async function JsonApiPost(classKey, params, body, files) {
     if (!body)
         body = {};
-    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("POST", generateLink(classKey, params), classKey.cache, body, files, token);
+    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("POST", generateLink(classKey, params), classKey.cache, body, files);
     return translateResponse(classKey, apiResponse);
 }
 exports.JsonApiPost = JsonApiPost;
-async function JsonApiPut(classKey, params, body, files, token) {
-    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("PUT", generateLink(classKey, params), classKey.cache, body, files, token);
+async function JsonApiPut(classKey, params, body, files) {
+    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("PUT", generateLink(classKey, params), classKey.cache, body, files);
     return translateResponse(classKey, apiResponse);
 }
 exports.JsonApiPut = JsonApiPut;
-async function JsonApiPatch(classKey, params, body, files, token) {
-    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("PATCH", generateLink(classKey, params), classKey.cache, body, files, token);
+async function JsonApiPatch(classKey, params, body, files) {
+    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("PATCH", generateLink(classKey, params), classKey.cache, body, files);
     return translateResponse(classKey, apiResponse);
 }
 exports.JsonApiPatch = JsonApiPatch;
-async function JsonApiDelete(classKey, params, token) {
-    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("DELETE", generateLink(classKey, params), classKey.cache, token);
+async function JsonApiDelete(classKey, params) {
+    const apiResponse = await (0, JsonApiServerRequest_1.JsonApiServerRequest)("DELETE", generateLink(classKey, params), classKey.cache);
     return translateResponse(classKey, apiResponse);
 }
 exports.JsonApiDelete = JsonApiDelete;

@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JsonApiServerRequest = exports.JsonApiPut = exports.JsonApiPost = exports.JsonApiPatch = exports.JsonApiGetData = exports.JsonApiGet = exports.JsonApiDelete = exports.RehydrationFactory = exports.JsonApiDataFactory = exports.AbstractApiData = exports.DataClass = exports.updateToken = void 0;
-var CookieAuth_1 = require("./auth/CookieAuth");
-Object.defineProperty(exports, "updateToken", { enumerable: true, get: function () { return CookieAuth_1.updateToken; } });
+exports.RehydrationFactory = exports.JsonApiDataFactory = exports.AbstractApiData = exports.DataClass = void 0;
 var DataClass_1 = require("./DataClass");
 Object.defineProperty(exports, "DataClass", { enumerable: true, get: function () { return DataClass_1.DataClass; } });
 var AbstractApiData_1 = require("./jsonApi/abstracts/AbstractApiData");
@@ -11,13 +9,4 @@ var JsonApiDataFactory_1 = require("./jsonApi/factories/JsonApiDataFactory");
 Object.defineProperty(exports, "JsonApiDataFactory", { enumerable: true, get: function () { return JsonApiDataFactory_1.JsonApiDataFactory; } });
 var RehydrationFactory_1 = require("./jsonApi/factories/RehydrationFactory");
 Object.defineProperty(exports, "RehydrationFactory", { enumerable: true, get: function () { return RehydrationFactory_1.RehydrationFactory; } });
-var JsonApiRequest_1 = require("./jsonApi/JsonApiRequest");
-Object.defineProperty(exports, "JsonApiDelete", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiDelete; } });
-Object.defineProperty(exports, "JsonApiGet", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiGet; } });
-Object.defineProperty(exports, "JsonApiGetData", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiGetData; } });
-Object.defineProperty(exports, "JsonApiPatch", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiPatch; } });
-Object.defineProperty(exports, "JsonApiPost", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiPost; } });
-Object.defineProperty(exports, "JsonApiPut", { enumerable: true, get: function () { return JsonApiRequest_1.JsonApiPut; } });
-var JsonApiServerRequest_1 = require("./jsonApi/JsonApiServerRequest");
-Object.defineProperty(exports, "JsonApiServerRequest", { enumerable: true, get: function () { return JsonApiServerRequest_1.JsonApiServerRequest; } });
 //# sourceMappingURL=index.js.map

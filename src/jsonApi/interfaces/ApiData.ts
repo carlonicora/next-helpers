@@ -3,4 +3,6 @@ export type ApiData = {
   ok: boolean;
   status: number;
   statusText: string;
+  token?: string;
+  refreshToken?: string;
 };

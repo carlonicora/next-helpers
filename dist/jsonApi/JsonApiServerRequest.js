@@ -25,13 +25,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonApiServerRequest = void 0;
-const CookieAuth_1 = require("../auth/CookieAuth");
-async function JsonApiServerRequest(method, link, cache, body, files, token) {
+async function JsonApiServerRequest(method, link, cache, body, files, token, refreshToken) {
     const response = {
         data: undefined,
         ok: false,
         status: 0,
         statusText: "",
+        token: token,
+        refreshToken: refreshToken,
     };
     if (!token) {
         const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
@@ -99,7 +100,6 @@ async function JsonApiServerRequest(method, link, cache, body, files, token) {
     if (apiResponse.status === 401) {
         const serverCookies = await Promise.resolve().then(() => __importStar(require("next/headers")));
         const cookieStore = serverCookies.cookies();
-        console.log("Refreshing token", cookieStore.get("refreshToken")?.value);
         const headers = {};
         const options = {
             method: "POST",
@@ -109,17 +109,18 @@ async function JsonApiServerRequest(method, link, cache, body, files, token) {
         const tokenRefreshResponse = await fetch(uri, options);
         if (tokenRefreshResponse.ok) {
             const data = await tokenRefreshResponse.json();
-            (0, CookieAuth_1.updateToken)({
-                token: data.data.attributes.token,
-                refreshToken: data.data.attributes.refreshToken,
-            });
-            return await JsonApiServerRequest(method, link, cache, body, files, data.token);
+            return await JsonApiServerRequest(method, link, cache, body, files, data.data.attributes.token, data.data.attributes.refreshToken);
         }
     }
     response.ok = apiResponse.ok;
     response.status = apiResponse.status;
     response.statusText = apiResponse.statusText;
-    response.data = await apiResponse.json();
+    try {
+        response.data = await apiResponse.json();
+    }
+    catch (error) {
+        response.data = undefined;
+    }
     return response;
 }
 exports.JsonApiServerRequest = JsonApiServerRequest;
