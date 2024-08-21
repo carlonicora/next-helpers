@@ -5,9 +5,11 @@ export declare abstract class AbstractApiData implements ApiDataInterface {
     protected _jsonApi?: any;
     protected _included?: any[];
     protected _id?: string;
+    protected _type?: string;
     protected _createdAt?: Date;
     protected _updatedAt?: Date;
     protected _self?: string;
+    get type(): string;
     get id(): string;
     get self(): string | undefined;
     get createdAt(): Date | undefined;

@@ -3,9 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractApiData = void 0;
 const RehydrationFactory_1 = require("../factories/RehydrationFactory");
 class AbstractApiData {
+    get type() {
+        if (!this._type)
+            throw new Error("Type is not set.");
+        return this._type;
+    }
     get id() {
         if (!this._id)
-            throw new Error("Grocery ID is not set.");
+            throw new Error("Id is not set.");
         return this._id;
     }
     get self() {
@@ -59,6 +64,7 @@ class AbstractApiData {
     rehydrate(data) {
         this._jsonApi = data.jsonApi;
         this._included = data.included;
+        this._type = this._jsonApi.type;
         this._id = this._jsonApi.id;
         this._createdAt =
             this._jsonApi.meta.createdAt !== undefined

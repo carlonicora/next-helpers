@@ -8,13 +8,19 @@ export abstract class AbstractApiData implements ApiDataInterface {
   protected _included?: any[];
 
   protected _id?: string;
+  protected _type?: string;
   protected _createdAt?: Date;
   protected _updatedAt?: Date;
 
   protected _self?: string;
 
+  get type(): string {
+    if (!this._type) throw new Error("Type is not set.");
+    return this._type;
+  }
+
   get id(): string {
-    if (!this._id) throw new Error("Grocery ID is not set.");
+    if (!this._id) throw new Error("Id is not set.");
     return this._id;
   }
 
@@ -101,6 +107,7 @@ export abstract class AbstractApiData implements ApiDataInterface {
     this._jsonApi = data.jsonApi;
     this._included = data.included;
 
+    this._type = this._jsonApi.type;
     this._id = this._jsonApi.id;
     this._createdAt =
       this._jsonApi.meta.createdAt !== undefined

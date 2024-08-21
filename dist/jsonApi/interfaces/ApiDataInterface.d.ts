@@ -1,6 +1,7 @@
 import { JsonApiHydratedDataInterface } from "./JsonApiHydratedDataInterface";
 export interface ApiDataInterface {
     get included(): any[];
+    get type(): string;
     get id(): string;
     get createdAt(): Date | undefined;
     get updatedAt(): Date | undefined;
