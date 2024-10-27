@@ -26,6 +26,12 @@ class AbstractApiData {
         return this._included ?? [];
     }
     ingestJsonApi(data) { }
+    generateApiUrl(params) {
+        throw new Error("Method not implemented.");
+    }
+    createJsonApi(data) {
+        throw new Error("Method not implemented.");
+    }
     _readIncluded(data, type, dataType) {
         if (data.included === undefined ||
             data.included.length === 0 ||
